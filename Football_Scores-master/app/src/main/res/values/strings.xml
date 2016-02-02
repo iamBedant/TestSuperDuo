@@ -38,4 +38,6 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="upcoming_matches">Upcoming Matches</string>
+    <string name="home_team_logo_description">Home Team Logo</string>
+    <string name="away_team_logo_description">Away Team Logo</string>
 </resources>

@@ -1,4 +1,12 @@
-package barqsoft.footballscores;
+package barqsoft.footballscores.Utils;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.widget.RemoteViews;
+
+import barqsoft.footballscores.R;
 
 /**
  * Created by yehya khaled on 3/3/2015.
@@ -84,4 +92,6 @@ public class Utilies
             default: return R.drawable.no_icon;
         }
     }
+
+
 }
