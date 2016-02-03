@@ -25,6 +25,8 @@ public class MainScreenFragment extends Fragment implements LoaderManager.Loader
     private String[] fragmentdate = new String[1];
     private int last_selected_item = -1;
 
+
+
     public MainScreenFragment()
     {
     }

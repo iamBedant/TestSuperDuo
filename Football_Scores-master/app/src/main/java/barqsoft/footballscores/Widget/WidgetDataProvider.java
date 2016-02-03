@@ -27,10 +27,7 @@ import barqsoft.footballscores.Utils.WidgetUtils;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory {
 
-    private static final String TAG = "WidgetDataProvider";
-
-
-    List<String> mCollection = new ArrayList<>();
+    Cursor data = null;
     Context mContext = null;
 
 
@@ -41,7 +38,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public void onCreate() {
-        initData();
+
     }
 
 
@@ -53,23 +50,36 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public void onDestroy() {
-
+        if (data != null) {
+            data.close();
+            data = null;
+        }
 
     }
 
 
     @Override
     public int getCount() {
-        return mCollection.size();
+        return data == null ? 0 : data.getCount();
     }
 
 
     @Override
     public RemoteViews getViewAt(int position) {
-        RemoteViews view = new RemoteViews(mContext.getPackageName(),
-                android.R.layout.simple_list_item_1);
-        view.setTextViewText(android.R.id.text1, mCollection.get(position));
-        return view;
+
+        if (position == AdapterView.INVALID_POSITION || data == null || !data.moveToPosition(position)) {
+            return null;
+        }
+
+        RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.today_list_item);
+        WidgetUtils.setFixtureView(mContext, views, data);
+        final Intent intentMessage = new Intent();
+        final Bundle extras = new Bundle();
+        extras.putString(Config.LATEST_FIXTURE_SCORES_DATE, data.getString(data.getColumnIndex(DatabaseContract.scores_table.DATE_COL)));
+        extras.putInt(Config.SCORES_MATCH_ID, data.getInt(data.getColumnIndex(DatabaseContract.scores_table.MATCH_ID)));
+        intentMessage.putExtras(extras);
+        views.setOnClickFillInIntent(R.id.today_list_item, intentMessage);
+        return views;
     }
 
 
@@ -98,9 +108,20 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
 
     private void initData() {
-        mCollection.clear();
-        for (int i = 1; i <= 10; i++) {
-            mCollection.add("ListView item " + i);
+        if (data != null) {
+            data.close();
         }
+
+        final long identityToken = Binder.clearCallingIdentity();
+        // load today fixture
+        data = mContext.getContentResolver().query(
+                DatabaseContract.scores_table.buildScoreWithDate(),
+                null,
+                null,
+                new String[]{Utils.getTodayLocaleDate()},
+                DatabaseContract.scores_table.TIME_COL + " ASC, " + DatabaseContract.scores_table.HOME_COL + " ASC");
+
+        // and restore the identity again
+        Binder.restoreCallingIdentity(identityToken);
     }
 }
